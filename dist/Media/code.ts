@@ -38,7 +38,6 @@ async function logic(payload: BasePayload) {
 
     const embedHTML = await sendRequest(videoURLTemp, {});
     const videoURL = new URL(videoURLTemp);
-    const embedDOM = (new DOMParser()).parseFromString(embedHTML, "text/html");
 
     const encyptedParams = generateEncryptedAjaxParams(
         embedHTML.split("data-value")[1].split("\"")[1],
@@ -144,16 +143,11 @@ async function getSource(payload: BasePayload) {
 
     qualities = uniqueAuthors.map(item => item)
 
-    console.log(qualities);
-
     sendResult({
         result: {
             sources: qualities,
             subtitles: [],
-            skips: [
-                {start: 0, end: 89, type: 'Opening'}, 
-                {start: 1355, end: 1414, type: 'Ending'}
-            ]
+            skips: []
         },
         action: "video",
     });

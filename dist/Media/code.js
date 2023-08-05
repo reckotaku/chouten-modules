@@ -30,7 +30,6 @@ async function logic(payload) {
     }
     const embedHTML = await sendRequest(videoURLTemp, {});
     const videoURL = new URL(videoURLTemp);
-    const embedDOM = (new DOMParser()).parseFromString(embedHTML, "text/html");
     const encyptedParams = generateEncryptedAjaxParams(embedHTML.split("data-value")[1].split("\"")[1], (_a = videoURL.searchParams.get('id')) !== null && _a !== void 0 ? _a : '', keys);
     const encryptedData = JSON.parse(await sendRequest(`${videoURL.protocol}//${videoURL.hostname}/encrypt-ajax.php?${encyptedParams}`, {
         "X-Requested-With": "XMLHttpRequest"
@@ -106,15 +105,11 @@ async function getSource(payload) {
         return accumulator;
     }, []);
     qualities = uniqueAuthors.map(item => item);
-    console.log(qualities);
     sendResult({
         result: {
             sources: qualities,
             subtitles: [],
-            skips: [
-                { start: 0, end: 89, type: 'Opening' },
-                { start: 1355, end: 1414, type: 'Ending' }
-            ]
+            skips: []
         },
         action: "video",
     });
