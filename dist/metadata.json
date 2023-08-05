@@ -1,9 +1,9 @@
 {
-    "id": "1",
+    "id": "2",
     "type": "source",
     "subtypes": ["anime"],
-    "name": "Aniwatch.to",
-    "version": "0.3.1",
+    "name": "Gogoanime",
+    "version": "0.0.1",
     "formatVersion": 1,
     "updateUrl": "https://raw.githubusercontent.com/adolar0042/MyModule/main/module.json",
     "general": {

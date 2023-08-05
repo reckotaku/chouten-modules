@@ -1,24 +1,20 @@
 "use strict";
 async function logic(payload) {
-    var _a;
-    const html = await sendRequest(`https://aniwatch.to/search?keyword=${encodeURIComponent(payload.query)}`, {});
-    const document = (new DOMParser()).parseFromString(html, "text/html");
-    const elements = document.querySelectorAll(".film_list-wrap .film-detail > h3 > a");
-    const images = document.querySelectorAll(".film_list-wrap .film-poster > img");
-    const subDub = document.querySelectorAll(".film_list-wrap > div > .film-poster > div.tick.ltr");
-    const epCounts = document.querySelectorAll(".film_list-wrap > div > .film-poster > .tick.ltr > div");
-    const titles = [];
-    for (let i = 0; i < elements.length; i++) {
-        const hasSub = subDub[i].innerText.includes("SUB");
-        const hasDub = subDub[i].innerText.includes("DUB");
-        const counts = epCounts[i].innerText.replace("Ep ", "").split("/");
+    var _a, _b, _c, _d, _e, _f;
+    const baseURL = "https://gogoanime.hu";
+    const searchHTML = await sendRequest(`${baseURL}/search.html?keyword=${encodeURIComponent(payload.query)}`, {});
+    let dom = (new DOMParser()).parseFromString(searchHTML, "text/html");
+    let itemsDOM = dom.querySelectorAll("ul.items li");
+    let titles = [];
+    for (var i = 0; i < itemsDOM.length; i++) {
+        let con = itemsDOM[i];
         titles.push({
-            url: `https://aniwatch.to${elements[i].getAttribute("href")}`,
-            img: (_a = images[i].getAttribute("data-src")) !== null && _a !== void 0 ? _a : "",
-            title: elements[i].innerText,
-            indicatorText: `${hasSub ? "Sub" : ""}${hasSub && hasDub ? "|" : ""}${hasDub ? "Dub" : ""}`,
-            currentCount: parseInt(counts[0]),
-            totalCount: parseInt(counts[1]),
+            url: `${baseURL}/${(_a = con.querySelector("a")) === null || _a === void 0 ? void 0 : _a.getAttribute("href")}`,
+            img: (_b = con.querySelector("img")) === null || _b === void 0 ? void 0 : _b.getAttribute("src"),
+            title: (_d = (_c = con.querySelector(".name")) === null || _c === void 0 ? void 0 : _c.innerText) === null || _d === void 0 ? void 0 : _d.trim(),
+            indicatorText: (_f = (_e = con.querySelector(".released")) === null || _e === void 0 ? void 0 : _e.innerText) === null || _f === void 0 ? void 0 : _f.replace("Released:", "").trim(),
+            currentCount: NaN,
+            totalCount: NaN
         });
     }
     sendResult({

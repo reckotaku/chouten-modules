@@ -1,54 +1,78 @@
+function generateEncryptedAjaxParams(scriptValue: string, id: string, keys: Array<string>) {
+    const encryptedKey = CryptoJS.AES.encrypt(id, keys[0], {
+        iv: keys[2] as any,
+    });
+
+    const decryptedToken = CryptoJS.AES.decrypt(scriptValue, keys[0], {
+        iv: keys[2] as any,
+    }).toString(CryptoJS.enc.Utf8);
+
+    return `id=${encryptedKey}&alias=${id}&${decryptedToken}`;
+}
+
+function decryptAjaxData(encryptedData: string, keys: Array<string>) {
+    const decryptedData = CryptoJS.enc.Utf8.stringify(
+        CryptoJS.AES.decrypt(encryptedData, keys[1], {
+            iv: keys[2] as any,
+        })
+    );
+    return JSON.parse(decryptedData);
+}
+
 async function logic(payload: BasePayload) {
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js");
 
-    const response = JSON.parse(await sendRequest(payload.query, {}));
+    const watchHTML = await sendRequest(payload.query, {});
+    const watchDOM = (new DOMParser()).parseFromString(watchHTML, "text/html");
+    let videoURLTemp = watchDOM.querySelector("#load_anime iframe")!.getAttribute("src")!;
+    const keys = [
+        CryptoJS.enc.Utf8.parse("37911490979715163134003223491201"),
+        CryptoJS.enc.Utf8.parse("54674138327930866480207815084989"),
+        CryptoJS.enc.Utf8.parse("3134003223491201")
+    ];
 
-    const document = (new DOMParser()).parseFromString(response.html, "text/html");
+    if (videoURLTemp.substring(0, 2) === "//") {
+        videoURLTemp = "https:" + videoURLTemp;
+    }
 
-    const subServers = document.querySelector(
-        ".ps_-block.ps_-block-sub.servers-sub"
-    )!;
 
-    const dubServers = document.querySelector(
-        ".ps_-block.ps_-block-sub.servers-dub"
+    const embedHTML = await sendRequest(videoURLTemp, {});
+    const videoURL = new URL(videoURLTemp);
+    const embedDOM = (new DOMParser()).parseFromString(embedHTML, "text/html");
+
+    const encyptedParams = generateEncryptedAjaxParams(
+        embedHTML.split("data-value")[1].split("\"")[1],
+        videoURL.searchParams.get('id') ?? '',
+        keys
     );
 
-    let elements = subServers.querySelectorAll<HTMLElement>(".server-item");
-    const servers: MediaDataResult[] = [];
-    const subServersList = [];
-    const dubServersList = [];
-
-    for (let i = 0; i < elements.length; i++) {
-        console.log(elements[i].innerText);
-        subServersList.push({
-            url:
-                "https://aniwatch.to/ajax/v2/episode/sources?id=" +
-                elements[i].getAttribute("data-id"),
-            name: elements[i].innerText + " (Sub)",
-        });
-    }
-
-    if (dubServers != null) {
-        elements = dubServers.querySelectorAll(".server-item");
-        for (let i = 0; i < elements.length; i++) {
-            console.log(elements[i].innerText);
-            dubServersList.push({
-                url:
-                    "https://aniwatch.to/ajax/v2/episode/sources?id=" +
-                    elements[i].getAttribute("data-id"),
-                name: elements[i].innerText + " (Dub)",
-            });
+    const encryptedData = JSON.parse(await sendRequest(
+        `${videoURL.protocol}//${videoURL.hostname}/encrypt-ajax.php?${encyptedParams}`,
+        {
+            "X-Requested-With": "XMLHttpRequest"
         }
+    ));
+
+    const decryptedData = decryptAjaxData(encryptedData.data, keys);
+
+    const servers: MediaDataResult[] = [];
+
+    servers.push({
+        title: "Video",
+        list: []
+    });
+
+    for (const source of decryptedData.source) {
+        servers[0].list.push({
+            url: source.file,
+            name: "HLS"
+        })
     }
-    servers.push(
-        {
-            title: "Sub",
-            list: subServersList
-        },
-        {
-            title: "Dub",
-            list: dubServersList
-        },
-    )
+
+    console.log(JSON.stringify({
+        result: servers,
+        action: "server"
+    }));
 
     sendResult({
         result: servers,
@@ -91,167 +115,46 @@ function getFile(url: string) {
     }
 }
 
-async function getSource(payload: any) {
+async function getSource(payload: BasePayload) {
 
-    const link = JSON.parse(await sendRequest(payload.query, {})).link;
-    const embedId = link
-        .replace("https://megacloud.tv/embed-2/e-1/", "")
-        .split("?")[0];
+    const manifestUrl = payload.query;
+    const resResult = await sendRequest(manifestUrl, {});
 
-    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js");
+    let qualities = []
+    const resolutions = resResult.split("\\n\\n")[0].match(/(RESOLUTION=)(.*)(\s*?)(\s*.*)/g);
+    resolutions?.forEach((res) => {
+        const index = manifestUrl.lastIndexOf('/');
+        const quality = res.split('\n')[0].split('x')[1].split(',')[0];
+        const url = manifestUrl.slice(0, index);
+        qualities.push({
+            file: url + '/' + res.split('\n')[1].replace("/", ""),
+            type: "hls",
+            quality: quality + 'p',
+        });
+    });
 
-    const embedUrl = `https://megacloud.tv/embed-2/ajax/e-1/getSources?id=${embedId}`;
+    qualities.push({ quality: "auto", file: manifestUrl, type: "hls" })
 
-    const myJsonObject = JSON.parse(await sendRequest(embedUrl, {}));
-
-    if (myJsonObject["encrypted"] == true) {
-        let base64 = myJsonObject["sources"];
-        let enc_key = getFile(
-            "https://raw.githubusercontent.com/enimax-anime/key/e6/key.txt"
-        )!;
-        let keyArray = [];
-
-        try {
-            keyArray = JSON.parse(enc_key);
-        } catch (err) {
-
+    const uniqueAuthors = qualities.reduce((accumulator, current) => {
+        if (!accumulator.find((item) => item.quality === current.quality)) {
+            accumulator.push(current);
         }
+        return accumulator;
+    }, [] as MediaQuality[]);
 
-        let key = extractAndConcatenateString(base64, keyArray);
+    qualities = uniqueAuthors.map(item => item)
 
-        // @ts-ignore
-        const decryptedSources = CryptoJS.AES.decrypt(key.enc_string, key.dec_key).toString(
-            // @ts-ignore
-            CryptoJS.enc.Utf8
-        );
+    console.log(qualities);
 
-        const manifestUrl = JSON.parse(decryptedSources)[0].file;
-        const resResult = getFile(manifestUrl)!;
-
-        let qualities: Array<MediaQuality> = []
-        const resolutions = resResult.split("\\n\\n")[0].match(/(RESOLUTION=)(.*)(\s*?)(\s*.*)/g);
-        resolutions?.forEach((res) => {
-            const index = manifestUrl.lastIndexOf('/');
-            const quality = res.split('\n')[0].split('x')[1].split(',')[0];
-            const url = manifestUrl.slice(0, index);
-            qualities.push({
-                file: url + '/' + res.split('\n')[1].replace("/", ""),
-                type: "hls",
-                quality: quality + 'p',
-            });
-        });
-
-        qualities.push({ quality: "auto", file: manifestUrl, type: "hls" });
-
-        const uniqueAuthors = qualities.reduce((accumulator, current) => {
-            if (!accumulator.find((item) => item.quality === current.quality)) {
-                accumulator.push(current);
-            }
-            return accumulator;
-        }, [] as MediaQuality[]);
-
-        qualities = uniqueAuthors.map(item => item);
-
-        sendResult({
-            result: {
-                skips:
-                    myJsonObject["intro"] != null
-                        ? [
-                            {
-                                start: myJsonObject["intro"]["start"],
-                                end: myJsonObject["intro"]["end"],
-                                type: "Opening",
-                            },
-                            {
-                                start: myJsonObject["outro"]["start"],
-                                end: myJsonObject["outro"]["end"],
-                                type: "Ending",
-                            },
-                        ]
-                        : [],
-                sources: qualities,
-                subtitles: myJsonObject["tracks"]
-                    .map((element: any) => {
-                        if (element["kind"] == "captions") {
-                            return {
-                                url: element["file"],
-                                language: element["label"],
-                            };
-                        }
-                    })
-                    .filter((elements: any) => {
-                        return (
-                            elements != null &&
-                            elements !== undefined &&
-                            elements !== ""
-                        );
-                    }),
-            },
-            action: "video",
-        }, true);
-        
-    } else {
-        const manifestUrl = myJsonObject["sources"][0].file;
-        const resResult = getFile(manifestUrl)!;
-
-        let qualities = []
-        const resolutions = resResult.split("\\n\\n")[0].match(/(RESOLUTION=)(.*)(\s*?)(\s*.*)/g);
-        resolutions?.forEach((res) => {
-            const index = manifestUrl.lastIndexOf('/');
-            const quality = res.split('\n')[0].split('x')[1].split(',')[0];
-            const url = manifestUrl.slice(0, index);
-            qualities.push({
-                file: url + '/' + res.split('\n')[1].replace("/", ""),
-                type: "hls",
-                quality: quality + 'p',
-            });
-        });
-
-        qualities.push({ quality: "auto", file: manifestUrl, type: "hls" })
-
-        const uniqueAuthors = qualities.reduce((accumulator, current) => {
-            if (!accumulator.find((item) => item.quality === current.quality)) {
-                accumulator.push(current);
-            }
-            return accumulator;
-        }, [] as MediaQuality[]);
-
-        qualities = uniqueAuthors.map(item => item)
-        
-        sendResult({
-            result: {
-                skips:
-                    myJsonObject["intro"] != null
-                        ? [
-                            {
-                                start: myJsonObject["intro"]["start"],
-                                end: myJsonObject["intro"]["end"],
-                                type: "Opening",
-                            },
-                            {
-                                start: myJsonObject["outro"]["start"],
-                                end: myJsonObject["outro"]["end"],
-                                type: "Ending",
-                            },
-                        ]
-                        : [],
-                sources: qualities,
-                subtitles: myJsonObject["tracks"]
-                    .map((element: any) => {
-                        if (element["kind"] == "captions") {
-                            return {
-                                url: element["file"],
-                                language: element["label"],
-                            };
-                        }
-                    })
-                    .filter((elements: any) => {
-                        return (
-                            !!elements
-                        );
-                    }),
-            },
-            action: "video",
-        }, true);
-    }
+    sendResult({
+        result: {
+            sources: qualities,
+            subtitles: [],
+            skips: [
+                {start: 0, end: 89, type: 'Opening'}, 
+                {start: 1355, end: 1414, type: 'Ending'}
+            ]
+        },
+        action: "video",
+    });
 }

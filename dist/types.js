@@ -1,4 +1,5 @@
 "use strict";
+let CryptoJS = {};
 let reqId = 0;
 let resolveFunctions = {};
 window.onmessage = async function (event) {

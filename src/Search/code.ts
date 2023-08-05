@@ -1,33 +1,21 @@
 async function logic(payload: BasePayload) {
+    const baseURL = "https://gogoanime.hu";
+    const searchHTML = await sendRequest(`${baseURL}/search.html?keyword=${encodeURIComponent(payload.query)}`, {});
 
-    const html = await sendRequest(`https://aniwatch.to/search?keyword=${encodeURIComponent(payload.query)}`, {});
+    let dom = (new DOMParser()).parseFromString(searchHTML, "text/html");
+    let itemsDOM = dom.querySelectorAll("ul.items li");
+    let titles: SearchData = [];
 
-    const document = (new DOMParser()).parseFromString(html, "text/html");
+    for (var i = 0; i < itemsDOM.length; i++) {
+        let con = itemsDOM[i];
 
-    const elements = document.querySelectorAll<HTMLElement>(
-        ".film_list-wrap .film-detail > h3 > a"
-    );
-    const images = document.querySelectorAll(".film_list-wrap .film-poster > img");
-    const subDub = document.querySelectorAll<HTMLElement>(
-        ".film_list-wrap > div > .film-poster > div.tick.ltr"
-    );
-    const epCounts = document.querySelectorAll<HTMLElement>(
-        ".film_list-wrap > div > .film-poster > .tick.ltr > div"
-    );
-    const titles: SearchData = [];
-
-    for (let i = 0; i < elements.length; i++) {
-        const hasSub = subDub[i].innerText.includes("SUB");
-        const hasDub = subDub[i].innerText.includes("DUB");
-        const counts = epCounts[i].innerText.replace("Ep ", "").split("/");
-        titles.push({
-            url: `https://aniwatch.to${elements[i].getAttribute("href")}`,
-            img: images[i].getAttribute("data-src") ?? "",
-            title: elements[i].innerText,
-            indicatorText: `${hasSub ? "Sub" : ""}${hasSub && hasDub ? "|" : ""}${hasDub ? "Dub" : ""
-                }`,
-            currentCount: parseInt(counts[0]),
-            totalCount: parseInt(counts[1]),
+        titles.push({ 
+            url: `${baseURL}/${con.querySelector("a")?.getAttribute("href")}`,
+            img: con.querySelector("img")?.getAttribute("src")!,
+            title: (con.querySelector(".name") as HTMLElement)?.innerText?.trim(),
+            indicatorText: (con.querySelector(".released") as HTMLElement)?.innerText?.replace("Released:", "").trim(),
+            currentCount: NaN,
+            totalCount: NaN
         });
     }
 
