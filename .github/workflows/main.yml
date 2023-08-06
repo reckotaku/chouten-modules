@@ -43,9 +43,9 @@ jobs:
 
     - run: |
           export type=$(cat /home/runner/type.txt)
-          mkdir $type
+          mkdir $type || echo "$type exists"
           cp /home/runner/*.module ./$type
           ls -a
           git config user.name github-actions
-          git config user.email github-actions@github.com
+          git config user.email "github-actions@github.com"
           git add . && git commit -m "test" && git push
