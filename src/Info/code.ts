@@ -51,12 +51,9 @@ async function logic(payload: BasePayload) {
 async function getEpList(payload: any) {
     const baseURL = "https://gogoanime.hu";
     const html = await sendRequest(payload.query, {});
-
     const document = (new DOMParser()).parseFromString(html, "text/html");
     const allEpInfo = [];
     const li = document.querySelectorAll("#episode_related > li");
-    
-    console.log(li.length);
     
     for(let i = 0; i < li.length; i++){
         const el = li[i];
