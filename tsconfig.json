@@ -1,7 +1,6 @@
 {
   "exclude": [
     "./test",
-    "./src/types.ts"
   ], 
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */

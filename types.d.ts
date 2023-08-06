@@ -1,5 +1,5 @@
 type NonEmptyArray<T> = [T, ...T[]];
-
+const CryptoJS: any = {};
 interface BasePayload {
     query: string,
     action: string

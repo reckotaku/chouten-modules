@@ -3,7 +3,7 @@ import path from "path";
 import puppeteer from "puppeteer";
 import { commonCode } from "./commonCode";
 import colors from "colors";
-import "../src/types";
+
 
 function readFile(pathname: string) {
     return readFileSync(path.join(__dirname, pathname), "utf-8");
@@ -168,7 +168,7 @@ if (folderName in distFolder) {
         //        Search
         // =====================
         const searchCode = readFile(`../dist/Search/code.js`);
-        const searchResult: { result: SearchData } = JSON.parse(await ini(searchCode, "logic", "odd"));
+        const searchResult = JSON.parse(await ini(searchCode, "logic", "odd"));
 
         if (searchResult.result?.length === 0) {
             console.log(colors.red("Search may not be working"));
@@ -179,7 +179,7 @@ if (folderName in distFolder) {
         // =====================
 
         const homeCode = readFile(`../dist/Home/code.js`);
-        const homeResult: { result: HomepageFinalData[] } = JSON.parse(await ini(homeCode, "logic", ""));
+        const homeResult = JSON.parse(await ini(homeCode, "logic", ""));
 
 
         // =====================
@@ -188,8 +188,8 @@ if (folderName in distFolder) {
 
         const infoCode = readFile(`../dist/Info/code.js`);
 
-        const infoMeta: { result: InfoData } = JSON.parse(await ini(infoCode, "logic", homeResult.result[0].data[0].url));
-        const infoList: { result: InfoEpisodeList[] } = JSON.parse(await ini(infoCode, "getEpList", infoMeta.result.epListURLs[0]));
+        const infoMeta = JSON.parse(await ini(infoCode, "logic", homeResult.result[0].data[0].url));
+        const infoList = JSON.parse(await ini(infoCode, "getEpList", infoMeta.result.epListURLs[0]));
 
 
         // =====================
@@ -198,8 +198,8 @@ if (folderName in distFolder) {
 
         const mediaCode = readFile(`../dist/Media/code.js`);
 
-        const mediaServer: { result: MediaDataResult[] } = JSON.parse(await ini(mediaCode, "logic", infoList.result[0].list[0].url));
-        const mediaLink: { result: MediaVideo[] } = JSON.parse(await ini(mediaCode, "getSource", mediaServer.result[0].list[0].url));
+        const mediaServer = JSON.parse(await ini(mediaCode, "logic", infoList.result[0].list[0].url));
+        const mediaLink = JSON.parse(await ini(mediaCode, "getSource", mediaServer.result[0].list[0].url));
 
 
         console.log(colors.yellow("Everything seems to be working fine!"));

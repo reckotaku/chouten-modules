@@ -4,7 +4,7 @@ async function logic(payload: BasePayload) {
 
     let dom = (new DOMParser()).parseFromString(searchHTML, "text/html");
     let itemsDOM = dom.querySelectorAll("ul.items li");
-    let titles: SearchData = [];
+    let titles: SearchData = [];    
 
     for (var i = 0; i < itemsDOM.length; i++) {
         let con = itemsDOM[i];
