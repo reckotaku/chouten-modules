@@ -1,11 +1,11 @@
 name = $(shell jq .name ./src/metadata.json -r)
 
 test:
-	echo $(src_dir)
+	echo $(name)
 build: 
 	rm ./dist -rf
 	- tsc
-	cp ./src/* ./dist/ -r
+	rsync -av --exclude='*.ts' ./src/* ./dist/
 
 build-module:
 	- make build
