@@ -8,8 +8,6 @@ async function logic(payload: BasePayload) {
     const items = Array.from(DOM?.querySelector(".added_series_body.popular")?.querySelectorAll("li") ?? []).map((elem) => {
         const current = Array.from(elem?.querySelectorAll("a") ?? [])?.pop()?.innerText ?? "";
 
-        console.log(elem?.innerHTML);
-
         return {
             url: `${baseURL}${elem?.querySelector("a")?.getAttribute("href") ?? ""}`,
             titles: {

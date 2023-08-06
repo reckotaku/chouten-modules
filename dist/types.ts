@@ -1,5 +1,4 @@
 type NonEmptyArray<T> = [T, ...T[]];
-let CryptoJS: any = {};
 
 interface BasePayload {
     query: string,
@@ -29,19 +28,19 @@ type BaseResult = {
 let reqId = 0;
 let resolveFunctions: { [key: string]: Function } = {};
 
-window.onmessage = async function (event: MessageEvent) {
-    const data = JSON.parse(event.data);
+// window.onmessage = async function (event: MessageEvent) {
+//     const data = JSON.parse(event.data);
 
-    if (data.action === "logic") {
-        try {
-            await logic(data.payload);
-        } catch (err: any) {
-            sendSignal(1, err.toString());
-        }
-    } else {
-        resolveFunctions[data.reqId](data.responseText);
-    }
-}
+//     if (data.action === "logic") {
+//         try {
+//             await logic(data.payload);
+//         } catch (err: any) {
+//             sendSignal(1, err.toString());
+//         }
+//     } else {
+//         resolveFunctions[data.reqId](data.responseText);
+//     }
+// }
 
 function loadScript(url: string) {
     return new Promise((resolve, reject) => {
@@ -55,7 +54,7 @@ function loadScript(url: string) {
     });
 }
 
-function sendRequest(url: string, headers: { [key: string]: string }): Promise<string> {
+function sendRequest(url: string, headers: { [key: string]: string }, method?: string, body?: string): Promise<string> {
     return new Promise((resolve, reject) => {
         const currentReqId = (++reqId).toString();
 
@@ -66,7 +65,9 @@ function sendRequest(url: string, headers: { [key: string]: string }): Promise<s
             reqId: currentReqId,
             action: "HTTPRequest",
             url,
-            headers
+            headers,
+            method: method,
+            body: body
         }));
     });
 }

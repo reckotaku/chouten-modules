@@ -1,21 +1,18 @@
 "use strict";
-let CryptoJS = {};
 let reqId = 0;
 let resolveFunctions = {};
-window.onmessage = async function (event) {
-    const data = JSON.parse(event.data);
-    if (data.action === "logic") {
-        try {
-            await logic(data.payload);
-        }
-        catch (err) {
-            sendSignal(1, err.toString());
-        }
-    }
-    else {
-        resolveFunctions[data.reqId](data.responseText);
-    }
-};
+// window.onmessage = async function (event: MessageEvent) {
+//     const data = JSON.parse(event.data);
+//     if (data.action === "logic") {
+//         try {
+//             await logic(data.payload);
+//         } catch (err: any) {
+//             sendSignal(1, err.toString());
+//         }
+//     } else {
+//         resolveFunctions[data.reqId](data.responseText);
+//     }
+// }
 function loadScript(url) {
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -25,7 +22,7 @@ function loadScript(url) {
         document.head.appendChild(script);
     });
 }
-function sendRequest(url, headers) {
+function sendRequest(url, headers, method, body) {
     return new Promise((resolve, reject) => {
         const currentReqId = (++reqId).toString();
         resolveFunctions[currentReqId] = resolve;
@@ -34,7 +31,9 @@ function sendRequest(url, headers) {
             reqId: currentReqId,
             action: "HTTPRequest",
             url,
-            headers
+            headers,
+            method: method,
+            body: body
         }));
     });
 }

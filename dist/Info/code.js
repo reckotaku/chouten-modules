@@ -46,6 +46,7 @@ async function getEpList(payload) {
     const document = (new DOMParser()).parseFromString(html, "text/html");
     const allEpInfo = [];
     const li = document.querySelectorAll("#episode_related > li");
+    console.log(li.length);
     for (let i = 0; i < li.length; i++) {
         const el = li[i];
         const num = parseFloat((_c = (_b = (_a = el.querySelector(`div.name`)) === null || _a === void 0 ? void 0 : _a.innerText) === null || _b === void 0 ? void 0 : _b.replace('EP ', '')) !== null && _c !== void 0 ? _c : "0");

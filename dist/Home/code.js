@@ -8,7 +8,6 @@ async function logic(payload) {
     const items = Array.from((_b = (_a = DOM === null || DOM === void 0 ? void 0 : DOM.querySelector(".added_series_body.popular")) === null || _a === void 0 ? void 0 : _a.querySelectorAll("li")) !== null && _b !== void 0 ? _b : []).map((elem) => {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
         const current = (_d = (_c = (_b = Array.from((_a = elem === null || elem === void 0 ? void 0 : elem.querySelectorAll("a")) !== null && _a !== void 0 ? _a : [])) === null || _b === void 0 ? void 0 : _b.pop()) === null || _c === void 0 ? void 0 : _c.innerText) !== null && _d !== void 0 ? _d : "";
-        console.log(elem === null || elem === void 0 ? void 0 : elem.innerHTML);
         return {
             url: `${baseURL}${(_f = (_e = elem === null || elem === void 0 ? void 0 : elem.querySelector("a")) === null || _e === void 0 ? void 0 : _e.getAttribute("href")) !== null && _f !== void 0 ? _f : ""}`,
             titles: {

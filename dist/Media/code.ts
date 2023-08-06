@@ -120,6 +120,9 @@ async function getSource(payload: BasePayload) {
     const resResult = await sendRequest(manifestUrl, {});
 
     let qualities = []
+
+    qualities.push({ quality: "auto", file: manifestUrl, type: "hls" })
+
     const resolutions = resResult.split("\\n\\n")[0].match(/(RESOLUTION=)(.*)(\s*?)(\s*.*)/g);
     resolutions?.forEach((res) => {
         const index = manifestUrl.lastIndexOf('/');
@@ -131,8 +134,6 @@ async function getSource(payload: BasePayload) {
             quality: quality + 'p',
         });
     });
-
-    qualities.push({ quality: "auto", file: manifestUrl, type: "hls" })
 
     const uniqueAuthors = qualities.reduce((accumulator, current) => {
         if (!accumulator.find((item) => item.quality === current.quality)) {
