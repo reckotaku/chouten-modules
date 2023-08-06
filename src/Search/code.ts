@@ -10,7 +10,7 @@ async function logic(payload: BasePayload) {
         let con = itemsDOM[i];
 
         titles.push({ 
-            url: `${baseURL}/${con.querySelector("a")?.getAttribute("href")}`,
+            url: `${baseURL}${con.querySelector("a")?.getAttribute("href")}`,
             img: con.querySelector("img")?.getAttribute("src")!,
             title: (con.querySelector(".name") as HTMLElement)?.innerText?.trim(),
             indicatorText: (con.querySelector(".released") as HTMLElement)?.innerText?.replace("Released:", "").trim(),

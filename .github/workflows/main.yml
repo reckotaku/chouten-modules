@@ -31,6 +31,7 @@ jobs:
       run: |
         cd $REPO_NAME && make build-module && cd ..
         cp ./$REPO_NAME/*.module /home/runner
+        jq .type ./$REPO_NAME/metadata.json -r > type.txt
       env: 
         REPO_NAME: ${{github.event.repository.name}}
         REPO_OWNER: ${{github.repository_owner}}
@@ -41,7 +42,9 @@ jobs:
         ref: "built"
 
     - run: |
-          cp /home/runner/*.module ./
+          export type=$(cat type.txt)
+          mkdir $type
+          cp /home/runner/*.module ./$type
           ls -a
           git config user.name github-actions
           git config user.email github-actions@github.com
