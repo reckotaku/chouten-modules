@@ -1,42 +1,65 @@
 async function logic(payload: BasePayload) {
-    const baseURL = "https://gogoanime.hu";
 
-    const html = await sendRequest(`https://ajax.gogo-load.com/ajax/page-recent-release-ongoing.html?page=1`, {});
-    const DOMParserInstance = new DOMParser();
-    const DOM = DOMParserInstance.parseFromString(html, "text/html");
+    const trending = JSON.parse(await sendRequest(
+        "https://hanime.tv/api/v8/browse-trending?time=day",
+        {
+            "Content-Type": "application/json",
+            "X-Signature-Version": "web2",
+        },
+    ));
 
-    const items = Array.from(DOM?.querySelector(".added_series_body.popular")?.querySelectorAll("li") ?? []).map((elem) => {
-        const current = Array.from(elem?.querySelectorAll("a") ?? [])?.pop()?.innerText ?? "";
-
-        return {
-            url: `${baseURL}${elem?.querySelector("a")?.getAttribute("href") ?? ""}`,
-            titles: {
-                primary: elem?.querySelector("a")?.getAttribute("title") ?? ""
-            },
-            image: elem?.querySelector<HTMLElement>(".thumbnail-popular")?.getAttribute("style")?.split("\'")[1] ?? "",
-            subtitle: "",
-            subtitleValue: [],
-            showIcon: false,
-            buttonText: "Watch Now",
-            indicator: "",
-            current: isNaN(parseInt(current)) ? null : parseInt(current),
-            total: null
-        }
-    });
-
-    const spotlight_data = [];
-
-    try {
-        spotlight_data.push(items.pop());
-        spotlight_data.push(items.pop());
-        spotlight_data.push(items.pop());
-
-        for (const data of spotlight_data) {
-            data!.indicator = "Spotlight";
-        }
-    } catch (err) {
-
+    let spotlight_data: Array<HompageData> = []
+    for(const i of trending['hentai_videos']){
+        //Fuck it i'm going in raw
+       spotlight_data.push({
+           image: i['cover_url'], 
+           titles: { primary: i['name'] }, 
+           url: `https://hanime.tv/videos/hentai/${i['slug']}`,
+           current: 1, 
+           total: 1, 
+           showIcon: false, 
+           indicator: "", 
+           buttonText: "",
+           subtitle: "",
+           subtitleValue: []
+       });
     }
+    
+    const recents = JSON.parse(await sendRequest(
+        "https://search.htv-services.com/",
+        {
+            "Content-Type": "application/json",
+        },
+        "POST",
+        JSON.stringify({
+            "search_text": "",
+            "tags":[],
+            "tags_mode":"AND",
+            "brands":[],
+            "blacklist":[],
+            "order_by":"released_at_unix",
+            "ordering":"desc",
+            "page":0
+        })
+    ));
+
+    let recents_data: Array<HompageData> = []
+    for(const i of JSON.parse(recents['hits'])){
+        //Fuck it i'm going in raw
+       recents_data.push({
+           image: i['cover_url'], 
+           titles: { primary: i['name'] }, 
+           url: `https://hanime.tv/videos/hentai/${i['slug']}`, 
+           current: 1, 
+           total: 1, 
+           showIcon: false, 
+           indicator: "Recents", 
+           buttonText: "",
+           subtitle: "",
+           subtitleValue: []
+       });
+    }
+
 
     const result = [
         {
@@ -47,12 +70,15 @@ async function logic(payload: BasePayload) {
         {
             type: "grid_2x",
             title: "Recently Released",
-            data: items
+            data: recents_data
         },
-    ] as HomepageFinalData[];
-
-    console.log(result);
-
+        // {
+        //     type: "grid_3x",
+        //     title: "Most Viewed",
+        //     data: []
+        // },
+    ];
+    
     sendResult({
         action: "homepage",
         result

@@ -1,38 +1,52 @@
 "use strict";
 async function logic(payload) {
-    var _a, _b;
-    const baseURL = "https://gogoanime.hu";
-    const html = await sendRequest(`https://ajax.gogo-load.com/ajax/page-recent-release-ongoing.html?page=1`, {});
-    const DOMParserInstance = new DOMParser();
-    const DOM = DOMParserInstance.parseFromString(html, "text/html");
-    const items = Array.from((_b = (_a = DOM === null || DOM === void 0 ? void 0 : DOM.querySelector(".added_series_body.popular")) === null || _a === void 0 ? void 0 : _a.querySelectorAll("li")) !== null && _b !== void 0 ? _b : []).map((elem) => {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
-        const current = (_d = (_c = (_b = Array.from((_a = elem === null || elem === void 0 ? void 0 : elem.querySelectorAll("a")) !== null && _a !== void 0 ? _a : [])) === null || _b === void 0 ? void 0 : _b.pop()) === null || _c === void 0 ? void 0 : _c.innerText) !== null && _d !== void 0 ? _d : "";
-        return {
-            url: `${baseURL}${(_f = (_e = elem === null || elem === void 0 ? void 0 : elem.querySelector("a")) === null || _e === void 0 ? void 0 : _e.getAttribute("href")) !== null && _f !== void 0 ? _f : ""}`,
-            titles: {
-                primary: (_h = (_g = elem === null || elem === void 0 ? void 0 : elem.querySelector("a")) === null || _g === void 0 ? void 0 : _g.getAttribute("title")) !== null && _h !== void 0 ? _h : ""
-            },
-            image: (_l = (_k = (_j = elem === null || elem === void 0 ? void 0 : elem.querySelector(".thumbnail-popular")) === null || _j === void 0 ? void 0 : _j.getAttribute("style")) === null || _k === void 0 ? void 0 : _k.split("\'")[1]) !== null && _l !== void 0 ? _l : "",
-            subtitle: "",
-            subtitleValue: [],
+    const trending = JSON.parse(await sendRequest("https://hanime.tv/api/v8/browse-trending?time=day", {
+        "Content-Type": "application/json",
+        "X-Signature-Version": "web2",
+    }));
+    let spotlight_data = [];
+    for (const i of trending['hentai_videos']) {
+        //Fuck it i'm going in raw
+        spotlight_data.push({
+            image: i['cover_url'],
+            titles: { primary: i['name'] },
+            url: `https://hanime.tv/videos/hentai/${i['slug']}`,
+            current: 1,
+            total: 1,
             showIcon: false,
-            buttonText: "Watch Now",
             indicator: "",
-            current: isNaN(parseInt(current)) ? null : parseInt(current),
-            total: null
-        };
-    });
-    const spotlight_data = [];
-    try {
-        spotlight_data.push(items.pop());
-        spotlight_data.push(items.pop());
-        spotlight_data.push(items.pop());
-        for (const data of spotlight_data) {
-            data.indicator = "Spotlight";
-        }
+            buttonText: "",
+            subtitle: "",
+            subtitleValue: []
+        });
     }
-    catch (err) {
+    const recents = JSON.parse(await sendRequest("https://search.htv-services.com/", {
+        "Content-Type": "application/json",
+    }, "POST", JSON.stringify({
+        "search_text": "",
+        "tags": [],
+        "tags_mode": "AND",
+        "brands": [],
+        "blacklist": [],
+        "order_by": "released_at_unix",
+        "ordering": "desc",
+        "page": 0
+    })));
+    let recents_data = [];
+    for (const i of JSON.parse(recents['hits'])) {
+        //Fuck it i'm going in raw
+        recents_data.push({
+            image: i['cover_url'],
+            titles: { primary: i['name'] },
+            url: `https://hanime.tv/videos/hentai/${i['slug']}`,
+            current: 1,
+            total: 1,
+            showIcon: false,
+            indicator: "Recents",
+            buttonText: "",
+            subtitle: "",
+            subtitleValue: []
+        });
     }
     const result = [
         {
@@ -43,10 +57,14 @@ async function logic(payload) {
         {
             type: "grid_2x",
             title: "Recently Released",
-            data: items
+            data: recents_data
         },
+        // {
+        //     type: "grid_3x",
+        //     title: "Most Viewed",
+        //     data: []
+        // },
     ];
-    console.log(result);
     sendResult({
         action: "homepage",
         result
