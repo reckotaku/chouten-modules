@@ -50,7 +50,7 @@
     "subtypes": [
       "anime"
     ],
-    "name": "Aniwatch.to",
+    "name": "Aniwatch",
     "version": "0.3.2",
     "formatVersion": 1,
     "updateUrl": "https://raw.githubusercontent.com/adolar0042/MyModule/main/module.json",
