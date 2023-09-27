@@ -13,7 +13,7 @@ async function logic(payload) {
     for (let i = 0; i < elements.length; i++) {
         console.log(elements[i].innerText);
         subServersList.push({
-            url: "https://aniwatch.to/ajax/v2/episode/sources?id=" + elements[i].getAttribute("data-id"),
+            url: "https://aniwave.to/ajax/v2/episode/sources?id=" + elements[i].getAttribute("data-id"),
             name: elements[i].innerText + " (Sub)",
         });
     }
@@ -22,7 +22,7 @@ async function logic(payload) {
         for (let i = 0; i < elements.length; i++) {
             console.log(elements[i].innerText);
             dubServersList.push({
-                url: "https://aniwatch.to/ajax/v2/episode/sources?id=" + elements[i].getAttribute("data-id"),
+                url: "https://aniwave.to/ajax/v2/episode/sources?id=" + elements[i].getAttribute("data-id"),
                 name: elements[i].innerText + " (Dub)",
             });
         }
