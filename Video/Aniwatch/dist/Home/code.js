@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 async function logic(payload) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23;
-    const html = await sendRequest("https://aniwatch.to/home", {});
+    const html = await sendRequest("https://aniwave.to/home", {});
     const DOMParserInstance = new DOMParser();
     const DOM = DOMParserInstance.parseFromString(html, "text/html");
     const top = DOM.querySelector(".deslide-wrap");
@@ -11,7 +11,7 @@ async function logic(payload) {
     for (let i = 0; i < spotlights.length; i++) {
         const item = spotlights[i];
         spotlight_data.push({
-            url: `https://aniwatch.to${item.querySelector(".desi-buttons > .btn.btn-secondary.btn-radius").getAttribute("href")}`,
+            url: `https://aniwave.to${item.querySelector(".desi-buttons > .btn.btn-secondary.btn-radius").getAttribute("href")}`,
             titles: {
                 primary: (_a = item.querySelector(".desi-head-title.dynamic-name")) === null || _a === void 0 ? void 0 : _a.innerText,
                 secondary: (_c = (_b = item.querySelector(".desi-head-title.dynamic-name")) === null || _b === void 0 ? void 0 : _b.getAttribute("data-jname")) !== null && _c !== void 0 ? _c : "",
@@ -31,7 +31,7 @@ async function logic(payload) {
     for (let i = 0; i < (recents === null || recents === void 0 ? void 0 : recents.length); i++) {
         const item = recents[i];
         recents_data.push({
-            url: `https://aniwatch.to${item.querySelector(".dynamic-name").getAttribute("href")}`,
+            url: `https://aniwave.to${item.querySelector(".dynamic-name").getAttribute("href")}`,
             titles: {
                 primary: (_j = item.querySelector(".dynamic-name")) === null || _j === void 0 ? void 0 : _j.innerText,
             },
@@ -51,7 +51,7 @@ async function logic(payload) {
     for (let i = 0; i < (new_list === null || new_list === void 0 ? void 0 : new_list.length); i++) {
         const item = new_list[i];
         new_data.push({
-            url: `https://aniwatch.to${(_u = item.querySelector(".dynamic-name")) === null || _u === void 0 ? void 0 : _u.getAttribute("href")}`,
+            url: `https://aniwave.to${(_u = item.querySelector(".dynamic-name")) === null || _u === void 0 ? void 0 : _u.getAttribute("href")}`,
             titles: {
                 primary: (_v = item.querySelector(".dynamic-name")) === null || _v === void 0 ? void 0 : _v.innerText,
             },
@@ -72,7 +72,7 @@ async function logic(payload) {
     for (let i = 0; i < (upcoming_list === null || upcoming_list === void 0 ? void 0 : upcoming_list.length); i++) {
         const item = upcoming_list[i];
         upcoming_data.push({
-            url: `https://aniwatch.to${(_5 = item.querySelector(".dynamic-name")) === null || _5 === void 0 ? void 0 : _5.getAttribute("href")}`,
+            url: `https://aniwave.to${(_5 = item.querySelector(".dynamic-name")) === null || _5 === void 0 ? void 0 : _5.getAttribute("href")}`,
             titles: {
                 primary: (_6 = item.querySelector(".dynamic-name")) === null || _6 === void 0 ? void 0 : _6.innerText,
             },
@@ -92,7 +92,7 @@ async function logic(payload) {
     for (let i = 0; i < (top_viewed_list === null || top_viewed_list === void 0 ? void 0 : top_viewed_list.length); i++) {
         const item = top_viewed_list[i];
         top_viewed_data.push({
-            url: `https://aniwatch.to${(_15 = item.querySelector(".dynamic-name")) === null || _15 === void 0 ? void 0 : _15.getAttribute("href")}`,
+            url: `https://aniwave.to${(_15 = item.querySelector(".dynamic-name")) === null || _15 === void 0 ? void 0 : _15.getAttribute("href")}`,
             titles: {
                 primary: (_16 = item.querySelector(".dynamic-name")) === null || _16 === void 0 ? void 0 : _16.innerText,
             },
@@ -119,7 +119,7 @@ async function logic(payload) {
         },
         {
             type: "grid_2x",
-            title: "Now on Zoro",
+            title: "Now on AniWave",
             data: new_data,
         },
         {
