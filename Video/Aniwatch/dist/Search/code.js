@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 async function logic(payload) {
     var _a;
-    const html = await sendRequest(`https://aniwatch.to/search?keyword=${encodeURIComponent(payload.query)}`, {});
+    const html = await sendRequest(`https://aniwave.to/search?keyword=${encodeURIComponent(payload.query)}`, {});
     const document = new DOMParser().parseFromString(html, "text/html");
     const elements = document.querySelectorAll(".film_list-wrap .film-detail > h3 > a");
     const images = document.querySelectorAll(".film_list-wrap .film-poster > img");
@@ -14,7 +14,7 @@ async function logic(payload) {
         const hasDub = subDub[i].innerText.includes("DUB");
         const counts = epCounts[i].innerText.replace("Ep ", "").split("/");
         titles.push({
-            url: `https://aniwatch.to${elements[i].getAttribute("href")}`,
+            url: `https://aniwave.to${elements[i].getAttribute("href")}`,
             img: (_a = images[i].getAttribute("data-src")) !== null && _a !== void 0 ? _a : "",
             title: elements[i].innerText,
             indicatorText: `${hasSub ? "Sub" : ""}${hasSub && hasDub ? "|" : ""}${hasDub ? "Dub" : ""}`,
