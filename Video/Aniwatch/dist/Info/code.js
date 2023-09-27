@@ -14,9 +14,9 @@ async function logic(payload) {
         .find((el) => el.innerText.includes("Status"))) === null || _h === void 0 ? void 0 : _h.querySelector(".name")) === null || _j === void 0 ? void 0 : _j.innerText;
     const totalMediaCount = document.querySelector(".tick-eps").innerText;
     const seasons = [...document.querySelectorAll(".os-list > a")].map((season) => {
-        return { name: season.innerText.trim(), url: `https://aniwatch.to${season.getAttribute("href")}` };
+        return { name: season.innerText.trim(), url: `https://aniwave.to${season.getAttribute("href")}` };
     });
-    const nextUrl = "https://aniwatch.to/ajax/v2/episode/list/" + ((_k = document.getElementById("wrapper")) === null || _k === void 0 ? void 0 : _k.getAttribute("data-id"));
+    const nextUrl = "https://aniwave.to/ajax/v2/episode/list/" + ((_k = document.getElementById("wrapper")) === null || _k === void 0 ? void 0 : _k.getAttribute("data-id"));
     sendResult({
         result: {
             id: "",
@@ -40,7 +40,7 @@ async function getEpList(payload) {
     const allEpInfo = [...document.querySelectorAll(".ssl-item.ep-item")].map((e) => {
         var _a, _b, _c;
         return {
-            url: "https://aniwatch.to/ajax/v2/episode/servers?episodeId=" + ((_a = e.getAttribute("href")) === null || _a === void 0 ? void 0 : _a.split("?ep=")[1]),
+            url: "https://aniwave.to/ajax/v2/episode/servers?episodeId=" + ((_a = e.getAttribute("href")) === null || _a === void 0 ? void 0 : _a.split("?ep=")[1]),
             title: (_b = e.getAttribute("title")) !== null && _b !== void 0 ? _b : "",
             number: parseFloat((_c = e.getAttribute("data-number")) !== null && _c !== void 0 ? _c : ""),
         };
